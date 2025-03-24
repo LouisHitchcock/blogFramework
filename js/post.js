@@ -3,31 +3,58 @@ import {
   collection,
   query,
   where,
-  getDocs
+  getDocs,
+  doc,
+  getDoc
 } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
 const params = new URLSearchParams(window.location.search);
 const slug = params.get("slug");
+const id = params.get("id");
 
-if (!slug) {
-  document.body.innerHTML = "<p>Missing slug.</p>";
-  throw new Error("Missing slug");
+const titleEl = document.getElementById("title");
+const dateEl = document.getElementById("date");
+const imageEl = document.getElementById("image");
+const contentEl = document.getElementById("content");
+
+function renderPost(data) {
+  titleEl.textContent = data.title;
+
+  if (data.created && data.created.toDate) {
+    const date = data.created.toDate();
+    dateEl.textContent = date.toLocaleDateString(undefined, {
+      year: "numeric",
+      month: "long",
+      day: "numeric"
+    });
+  }
+
+  if (data.image) {
+    imageEl.src = data.image;
+    imageEl.style.display = "block";
+  }
+
+  const rawHTML = marked.parse(data.content);
+  contentEl.innerHTML = DOMPurify.sanitize(rawHTML);
+
 }
 
-const q = query(collection(db, "posts"), where("slug", "==", slug));
-const snapshot = await getDocs(q);
-
-if (snapshot.empty) {
-  document.body.innerHTML = "<p>Post not found.</p>";
-} else {
-  const docSnap = snapshot.docs[0].data();
-
-  document.getElementById("title").textContent = docSnap.title;
-  document.getElementById("content").innerHTML = marked.parse(docSnap.content);
-
-  if (docSnap.image) {
-    const img = document.getElementById("image");
-    img.src = docSnap.image;
-    img.style.display = "block";
+if (slug) {
+  const q = query(collection(db, "posts"), where("slug", "==", slug));
+  const snapshot = await getDocs(q);
+  if (!snapshot.empty) {
+    renderPost(snapshot.docs[0].data());
+  } else {
+    document.body.innerHTML = "<p>Post not found.</p>";
   }
+} else if (id) {
+  const docRef = doc(db, "posts", id);
+  const docSnap = await getDoc(docRef);
+  if (docSnap.exists()) {
+    renderPost(docSnap.data());
+  } else {
+    document.body.innerHTML = "<p>Post not found.</p>";
+  }
+} else {
+  document.body.innerHTML = "<p>Missing slug or ID.</p>";
 }

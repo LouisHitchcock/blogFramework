@@ -116,3 +116,11 @@ button:hover {
   font-size: 14px;
   color: black;
 }
+
+
+.post-date {
+  text-align: center;
+  font-size: 14px;
+  color: #555;
+  margin-bottom: 20px;
+}
