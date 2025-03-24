@@ -5,9 +5,12 @@ This is a simple, frontend-only blog site built with vanilla HTML, CSS, and Java
 ## ✨ Features
 
 - Create blog posts (title, content, optional image)
+- Dynamic slug-based URLs for blog posts (SEO-friendly)
+- Duplicate title handling (`-2`, `-3`, etc.)
 - Markdown support in post content
-- Dynamic post pages with unique URLs
-- 3x3 grid display on homepage
+- **Automatic XSS protection** with DOMPurify
+- Post creation timestamps displayed on each post
+- 3x3 responsive grid display on homepage
 - Mobile-friendly layout
 - Firebase Firestore as the database
 - Fully client-side with no backend required
@@ -103,6 +106,16 @@ Go to [Google Cloud Console → Credentials](https://console.cloud.google.com/ap
 
 ---
 
+## 🛡 XSS Protection
+
+To protect against malicious content in blog posts:
+
+- We use [`DOMPurify`](https://github.com/cure53/DOMPurify) to sanitize all Markdown output
+- This removes any embedded `<script>` or dangerous HTML
+- Safe to render user-submitted Markdown content
+
+---
+
 ## 🛠 Project Structure
 
 ```
@@ -112,8 +125,8 @@ Go to [Google Cloud Console → Credentials](https://console.cloud.google.com/ap
 ├── style.css          # Shared styling
 └── js/
     ├── index.js       # Load posts to grid
-    ├── create.js      # Submit new post
-    ├── post.js        # Display post content
+    ├── create.js      # Submit new post with slug
+    ├── post.js        # Display post by slug or ID, with date
     ├── firebase.js    # Firebase init
     └── firebase-config.js  # Your secret config (gitignored)
 ```
