@@ -1,24 +1,33 @@
 import { db } from "./firebase.js";
-import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+import {
+  collection,
+  query,
+  where,
+  getDocs
+} from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
 const params = new URLSearchParams(window.location.search);
-const id = params.get("id");
+const slug = params.get("slug");
 
-const docRef = doc(db, "posts", id);
-const docSnap = await getDoc(docRef);
+if (!slug) {
+  document.body.innerHTML = "<p>Missing slug.</p>";
+  throw new Error("Missing slug");
+}
 
-if (docSnap.exists()) {
-  const data = docSnap.data();
-  document.getElementById("title").textContent = data.title;
+const q = query(collection(db, "posts"), where("slug", "==", slug));
+const snapshot = await getDocs(q);
 
-  // Render Markdown to HTML
-  document.getElementById("content").innerHTML = marked.parse(data.content);
+if (snapshot.empty) {
+  document.body.innerHTML = "<p>Post not found.</p>";
+} else {
+  const docSnap = snapshot.docs[0].data();
 
-  if (data.image) {
+  document.getElementById("title").textContent = docSnap.title;
+  document.getElementById("content").innerHTML = marked.parse(docSnap.content);
+
+  if (docSnap.image) {
     const img = document.getElementById("image");
-    img.src = data.image;
+    img.src = docSnap.image;
     img.style.display = "block";
   }
-} else {
-  document.body.innerHTML = "<p>Post not found.</p>";
 }
