@@ -1,5 +1,10 @@
 import { db } from "./firebase.js";
-import { collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+import {
+  collection,
+  getDocs,
+  query,
+  orderBy
+} from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
 const postsDiv = document.getElementById("posts");
 
@@ -9,8 +14,11 @@ const snapshot = await getDocs(q);
 snapshot.forEach(doc => {
   const data = doc.data();
 
+  // Use the 'slug' field instead of document ID
+  if (!data.slug) return; // Skip if slug doesn't exist
+
   const card = document.createElement("a");
-  card.href = `post.html?id=${doc.id}`;
+  card.href = `post.html?slug=${data.slug}`;
   card.className = "post-card";
 
   const title = document.createElement("h2");
